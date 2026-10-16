@@ -20,3 +20,23 @@ fetch("http://localhost:5678/api/works")
         });
     });
 
+fetch("http://localhost:5678/api/categories")
+    .then(response => response.json())
+    .then(categories => {
+        const filters = document.querySelector(".filters");
+
+        const buttonTous = document.createElement("button");
+        buttonTous.textContent = "Tous";
+        filters.appendChild(buttonTous);
+
+        categories.forEach(category => {
+            const button = document.createElement("button");
+            button.textContent = category.name;
+            button.onclick = function () {filterWorkByCategory(category.id)};
+            filters.appendChild(button);
+        });
+    });
+
+function filterWorkByCategory(categoryId) {
+    alert(categoryId); 
+}
