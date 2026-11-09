@@ -139,3 +139,15 @@ if (closeModal && modal) {
         modal.style.display = "none";
     });
 }
+
+const login = document.querySelector("#login");
+
+if (token && login) {
+    login.textContent = "logout";
+    login.href = "#";
+
+    login.addEventListener("click", function() {
+        localStorage.removeItem("token");
+        window.location.href = "index.html";
+    });
+}
