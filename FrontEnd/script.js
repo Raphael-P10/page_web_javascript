@@ -58,3 +58,84 @@ function filterWorkByCategory(categoryId) {
     });
 
 }
+
+const loginForm = document.querySelector("#login-form");
+
+if (loginForm) {
+    loginForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        fetch("http://localhost:5678/api/users/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: document.querySelector("#email").value,
+                password: document.querySelector("#password").value
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.token) {
+                    localStorage.setItem("token", data.token);
+                    window.location.href = "index.html";
+                } else {
+                    alert("Identifiants incorrects");
+                }
+            });
+    });
+}
+
+const editionMode = document.querySelector("#edition-mode");
+const token = localStorage.getItem("token");
+const filters = document.querySelector(".filters");
+const editButton = document.querySelector("#edit-button");
+
+if (token) {
+    if (editionMode) {
+        editionMode.style.display = "block";
+    }
+
+    if (filters) {
+        filters.style.display = "none";
+    }
+
+    if (editButton) {
+        editButton.style.display = "block";
+    }
+}
+
+const modal = document.querySelector("#modal");
+const closeModal = document.querySelector("#close-modal");
+const modalGallery = document.querySelector("#modal-gallery");
+
+// Ouvrir la modale
+if (token && editButton && modal) {
+    editButton.addEventListener("click", function () {
+        modal.style.display = "block";
+
+        modalGallery.innerHTML = "";
+
+        allWorks.forEach(work => {
+            const container = document.createElement("div");
+
+            const image = document.createElement("img");
+            image.src = work.imageUrl;
+            image.alt = work.title;
+
+            const button = document.createElement("button");
+            button.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+
+            container.appendChild(image);
+            container.appendChild(button);
+
+            modalGallery.appendChild(container);
+        });
+    });
+}
+
+// Fermer la modale
+if (closeModal && modal) {
+    closeModal.addEventListener("click", function () {
+        modal.style.display = "none";
+    });
+}

@@ -301,3 +301,15 @@ footer nav ul {
 	justify-content: flex-end;
 	margin: 2em
 }
+
+#edition-mode {
+	display: none;
+	background-color: #000;
+	color: white;
+	text-align: center;
+	padding: 15px;
+}
+
+#edit-button {
+    display: none;
+}
