@@ -108,7 +108,6 @@ const modal = document.querySelector("#modal");
 const closeModal = document.querySelector("#close-modal");
 const modalGallery = document.querySelector("#modal-gallery");
 
-// Ouvrir la modale
 if (token && editButton && modal) {
     editButton.addEventListener("click", function () {
         modal.style.display = "block";
@@ -133,7 +132,6 @@ if (token && editButton && modal) {
     });
 }
 
-// Fermer la modale
 if (closeModal && modal) {
     closeModal.addEventListener("click", function () {
         modal.style.display = "none";
@@ -146,8 +144,30 @@ if (token && login) {
     login.textContent = "logout";
     login.href = "#";
 
-    login.addEventListener("click", function() {
+    login.addEventListener("click", function () {
         localStorage.removeItem("token");
         window.location.href = "index.html";
     });
 }
+
+const addPhotoButton = document.querySelector("#add-photo-button");
+const addModal = document.querySelector("#add-modal");
+const backModal = document.querySelector("#back-modal");
+const closeAddModal = document.querySelector("#close-add-modal");
+
+// Ouvrir la modale d'ajout
+addPhotoButton.addEventListener("click", function() {
+    modal.style.display = "none";
+    addModal.style.display = "flex";
+});
+
+// Revenir à la galerie
+backModal.addEventListener("click", function() {
+    addModal.style.display = "none";
+    modal.style.display = "flex";
+});
+
+// Fermer la modale
+closeAddModal.addEventListener("click", function() {
+    addModal.style.display = "none";
+});
