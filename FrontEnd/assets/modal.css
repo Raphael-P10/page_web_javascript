@@ -45,3 +45,7 @@
     color: black;
     text-align: center;
 }
+
+#back-modal {
+    user-select: none;
+}

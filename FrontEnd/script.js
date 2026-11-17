@@ -1,68 +1,72 @@
 let allWorks = [];
+const token = localStorage.getItem("token");
 
+// Récupération et affichage des projets
 fetch("http://localhost:5678/api/works")
     .then(response => response.json())
     .then(works => {
         allWorks = works;
         const gallery = document.querySelector(".gallery");
 
-        works.forEach(work => {
-            const figure = document.createElement("figure");
-
-            const image = document.createElement("img");
-            image.src = work.imageUrl;
-            image.alt = work.title;
-
-            const caption = document.createElement("figcaption");
-            caption.textContent = work.title;
-
-            figure.appendChild(image);
-            figure.appendChild(caption);
-
-            gallery.appendChild(figure);
-        });
+        if (gallery) {
+            works.forEach(work => {
+                const figure = document.createElement("figure");
+                figure.innerHTML = `
+                    <img src="${work.imageUrl}" alt="${work.title}">
+                    <figcaption>${work.title}</figcaption>
+                `;
+                gallery.appendChild(figure);
+            });
+        }
     });
 
+// Récupération des catégories
 fetch("http://localhost:5678/api/categories")
     .then(response => response.json())
     .then(categories => {
         const filters = document.querySelector(".filters");
+        const categorySelect = document.querySelector("#category");
 
-        const buttonTous = document.createElement("button");
-        buttonTous.textContent = "Tous";
-        buttonTous.onclick = function () {
-            filterWorkByCategory(null);
-        };
-
-        filters.appendChild(buttonTous);
+        if (filters) {
+            const buttonTous = document.createElement("button");
+            buttonTous.textContent = "Tous";
+            buttonTous.onclick = () => filterWorkByCategory(null);
+            filters.appendChild(buttonTous);
+        }
 
         categories.forEach(category => {
-            const button = document.createElement("button");
-            button.textContent = category.name;
-            button.onclick = function () { filterWorkByCategory(category.id) };
-            filters.appendChild(button);
+            if (filters) {
+                const button = document.createElement("button");
+                button.textContent = category.name;
+                button.onclick = () => filterWorkByCategory(category.id);
+                filters.appendChild(button);
+            }
+
+            if (categorySelect) {
+                const option = document.createElement("option");
+                option.value = category.id;
+                option.textContent = category.name;
+                categorySelect.appendChild(option);
+            }
         });
     });
 
+// Filtrage des projets
 function filterWorkByCategory(categoryId) {
-    const figures = document.querySelectorAll(".gallery figure");
+    document.querySelectorAll(".gallery figure").forEach(figure => {
+        const title = figure.querySelector("figcaption").textContent;
+        const work = allWorks.find(work => work.title === title);
 
-    figures.forEach(figure => {
-        const work = allWorks.find(work => work.title === figure.querySelector("figcaption").textContent);
-
-        if (categoryId === null || work.categoryId === categoryId) {
-            figure.style.display = "";
-        } else {
-            figure.style.display = "none";
-        }
+        figure.style.display =
+            categoryId === null || work.categoryId === categoryId ? "" : "none";
     });
-
 }
 
+// Connexion
 const loginForm = document.querySelector("#login-form");
 
 if (loginForm) {
-    loginForm.addEventListener("submit", function (event) {
+    loginForm.addEventListener("submit", event => {
         event.preventDefault();
 
         fetch("http://localhost:5678/api/users/login", {
@@ -73,101 +77,116 @@ if (loginForm) {
                 password: document.querySelector("#password").value
             })
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.token) {
-                    localStorage.setItem("token", data.token);
-                    window.location.href = "index.html";
-                } else {
-                    alert("Identifiants incorrects");
-                }
-            });
-    });
-}
-
-const editionMode = document.querySelector("#edition-mode");
-const token = localStorage.getItem("token");
-const filters = document.querySelector(".filters");
-const editButton = document.querySelector("#edit-button");
-
-if (token) {
-    if (editionMode) {
-        editionMode.style.display = "block";
-    }
-
-    if (filters) {
-        filters.style.display = "none";
-    }
-
-    if (editButton) {
-        editButton.style.display = "block";
-    }
-}
-
-const modal = document.querySelector("#modal");
-const closeModal = document.querySelector("#close-modal");
-const modalGallery = document.querySelector("#modal-gallery");
-
-if (token && editButton && modal) {
-    editButton.addEventListener("click", function () {
-        modal.style.display = "block";
-
-        modalGallery.innerHTML = "";
-
-        allWorks.forEach(work => {
-            const container = document.createElement("div");
-
-            const image = document.createElement("img");
-            image.src = work.imageUrl;
-            image.alt = work.title;
-
-            const button = document.createElement("button");
-            button.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
-
-            container.appendChild(image);
-            container.appendChild(button);
-
-            modalGallery.appendChild(container);
+        .then(response => response.json())
+        .then(data => {
+            if (data.token) {
+                localStorage.setItem("token", data.token);
+                window.location.href = "index.html";
+            } else {
+                alert("Identifiants incorrects");
+            }
         });
     });
 }
 
-if (closeModal && modal) {
-    closeModal.addEventListener("click", function () {
-        modal.style.display = "none";
-    });
-}
-
+// Mode édition et déconnexion
+const editionMode = document.querySelector("#edition-mode");
+const filters = document.querySelector(".filters");
+const editButton = document.querySelector("#edit-button");
 const login = document.querySelector("#login");
 
-if (token && login) {
-    login.textContent = "logout";
-    login.href = "#";
+if (token) {
+    if (editionMode) editionMode.style.display = "block";
+    if (filters) filters.style.display = "none";
+    if (editButton) editButton.style.display = "block";
 
-    login.addEventListener("click", function () {
-        localStorage.removeItem("token");
-        window.location.href = "index.html";
-    });
+    if (login) {
+        login.textContent = "logout";
+        login.href = "#";
+        login.onclick = () => {
+            localStorage.removeItem("token");
+            window.location.href = "index.html";
+        };
+    }
 }
 
+// Première modale
+const modal = document.querySelector("#modal");
+const modalGallery = document.querySelector("#modal-gallery");
+
+if (token && editButton && modal) {
+    editButton.onclick = () => {
+        modal.style.display = "block";
+        modalGallery.innerHTML = "";
+
+        allWorks.forEach(work => {
+            const container = document.createElement("div");
+            container.innerHTML = `
+                <img src="${work.imageUrl}" alt="${work.title}">
+                <button><i class="fa-solid fa-trash-can"></i></button>
+            `;
+
+            container.querySelector("button").onclick = () => alert(work.id);
+            modalGallery.appendChild(container);
+        });
+    };
+}
+
+const closeModal = document.querySelector("#close-modal");
+
+if (closeModal) {
+    closeModal.onclick = () => modal.style.display = "none";
+}
+
+// Deuxième modale
 const addPhotoButton = document.querySelector("#add-photo-button");
 const addModal = document.querySelector("#add-modal");
 const backModal = document.querySelector("#back-modal");
 const closeAddModal = document.querySelector("#close-add-modal");
 
-// Ouvrir la modale d'ajout
-addPhotoButton.addEventListener("click", function() {
-    modal.style.display = "none";
-    addModal.style.display = "flex";
-});
+if (addPhotoButton) {
+    addPhotoButton.onclick = () => {
+        modal.style.display = "none";
+        addModal.style.display = "flex";
+    };
+}
 
-// Revenir à la galerie
-backModal.addEventListener("click", function() {
-    addModal.style.display = "none";
-    modal.style.display = "flex";
-});
+if (backModal) {
+    backModal.onclick = () => {
+        addModal.style.display = "none";
+        modal.style.display = "block";
+    };
+}
 
-// Fermer la modale
-closeAddModal.addEventListener("click", function() {
-    addModal.style.display = "none";
-});
+if (closeAddModal) {
+    closeAddModal.onclick = () => addModal.style.display = "none";
+}
+
+// Ajout d'une photo
+const addPhotoForm = document.querySelector("#add-photo-form");
+
+if (addPhotoForm) {
+    addPhotoForm.onsubmit = event => {
+        event.preventDefault();
+
+        const formData = new FormData();
+        formData.append("image", document.querySelector("#photo").files[0]);
+        formData.append("title", document.querySelector("#title").value);
+        formData.append("category", document.querySelector("#category").value);
+
+        fetch("http://localhost:5678/api/works", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + token },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error();
+            return response.json();
+        })
+        .then(() => {
+            alert("Photo ajoutée !");
+            window.location.reload();
+        })
+        .catch(() => alert("Erreur lors de l'ajout de la photo"));
+    };
+}
