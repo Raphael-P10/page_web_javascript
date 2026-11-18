@@ -77,15 +77,15 @@ if (loginForm) {
                 password: document.querySelector("#password").value
             })
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.token) {
-                localStorage.setItem("token", data.token);
-                window.location.href = "index.html";
-            } else {
-                alert("Identifiants incorrects");
-            }
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.token) {
+                    localStorage.setItem("token", data.token);
+                    window.location.href = "index.html";
+                } else {
+                    alert("Identifiants incorrects");
+                }
+            });
     });
 }
 
@@ -126,7 +126,12 @@ if (token && editButton && modal) {
                 <button><i class="fa-solid fa-trash-can"></i></button>
             `;
 
-            container.querySelector("button").onclick = () => alert(work.id);
+            container.querySelector("button").onclick = () => {
+                fetch(`http://localhost:5678/api/works/${work.id}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": "Bearer " + token }
+                }).then(() => window.location.reload());
+            };
             modalGallery.appendChild(container);
         });
     };
@@ -179,14 +184,14 @@ if (addPhotoForm) {
             headers: { "Authorization": "Bearer " + token },
             body: formData
         })
-        .then(response => {
-            if (!response.ok) throw new Error();
-            return response.json();
-        })
-        .then(() => {
-            alert("Photo ajoutée !");
-            window.location.reload();
-        })
-        .catch(() => alert("Erreur lors de l'ajout de la photo"));
+            .then(response => {
+                if (!response.ok) throw new Error();
+                return response.json();
+            })
+            .then(() => {
+                alert("Photo ajoutée !");
+                window.location.reload();
+            })
+            .catch(() => alert("Erreur lors de l'ajout de la photo"));
     };
 }
